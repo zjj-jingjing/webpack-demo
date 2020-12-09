@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+webpack官网https://www.webpackjs.com/
+    webpack是一个打包工具，可以对一些资源文件进行打包处理，（资源文件包含js/jpg/gif/sass/less/html等等）
+
+
+webpack使用场景
+    在后续的模块化（modules）开发，打包处理项目的时候会经常使用到，例如vue脚手架搭建项目开发中，react脚手架搭建项目中，小程序开发中
+    主要作用：将所有的图片、css、模块等内容压缩到一个js文件中进行输出
+
+
+webpack核心概念
+    1、入口（entry）
+    2、出口（output）
+    3、loader        *重要
+    4、插件（plugins）*重要
+    5、模式
+
+    
+一般使用特定版本安装
+webpack安装（默认安装为最新版本，但是有些命令最新版本不支持，建议安装特定版本，建议使用版本4.44.2）
+    1、电脑已安装nodejs
+    2、创建文件，进入对应文件，使用npm/cnpm init初始化文件
+    3、安装webpack，npm/cnpm install --save-dev webpack，也可采用全局安装，一般不建议全局安装
+    4、如果安装webpack 4+版本，还需要安装cli（脚手架），npm/cnpm i --save-dev webpack-cli
+备注：3/4可以一起安装：npm/cnpm i webpack@4.44.2 webpack-cli --save-dev
+
+
+webpack特定版本安装
+    1、电脑已安装node.js
+    2、创建文件，进入对应文件，mkdir webpack-demo && cd webpack-demo，初始化文件：npm/cnpm init
+    3、安装特定版本webpack，npm/cnpm i --save-dev webpack@4.44.2
+    4、安装脚手架npm/cnpm i webpack-cli --save-dev
+
+注意：使用全局安装，全局安装的版本会被锁定，其他项目无法启动指定版本，可能会报错；全局依赖包路径C:\Users\Administrator\AppData\Roaming\npm
+尽量不要安装最新版本，会出现一些命令行可能不支持的问题
+如果要全局安装，尽量不要安装最新版本
+全局安装webpack： npm/cnpm i webpack@4.44.2 -g
+全局安装webpack脚手架：npm/cnpm i webpack-cli --global
+
+
+进行webpack配置前需要修改初始化package.json文件，修改"script":{
+    "start": "webpack --config webpack.config.js", //增加打包运行设置
+}
+打包时执行cnpm run start即可完成打包
+
+
+使用webpack进行资源打包，有两种形式
+    1、直接使用webpack来进行打包
+    2、webpack.config.js文件进行webpack全局配置，官网给出的官方建议为此方法
+            const path = require('path'); //引入全局路径，require是commonjs的语法，相当于 es6的import
+            module.exports = { //模块输出
+                //entry: './a.js', //表示现在要打包的文件，一个文件打包的写法为字符串
+                entry: ['./a.js','./b.js'], //多个文件打包成合并成一个bundle.js，将字符串写法转换为数组，多个文件如果写一个输出文件则会将打包的多个文件进行合并
+                output: {
+                        path: path.resolve(__dirname, 'dist')
+                        filename: 'bundle.js', //表示打包后生成的文件名，名称可以自定义    
+                }
+            }
+    如果想要一对一的输出，entry应该用对象的写法，输出文件[name].bundle.js，name对应数组中的自定义的属性名
+    const path = require('path');
+    module.exports = { 
+       entry: {
+           a: './a.js',
+           b: './b.js'
+       },
+       output: {
+            path: path.resolve(__dirname, 'dist')
+            filename: '[name].bundle.js', //name表示entry中对应的a,b属性名    
+            //filename: 'js/[name].bundle.js', //可以将js文件打包到js单独的文件夹中
+       }
+    }
+
+
+
+
+文件引入
+    1、commonjs语法的文件引入
+        require('./c.js'); //使用require关键字加上要引入的文件路径进行文件引入
+        const c = require('./c.js'); //方便后面调用可以声明一下
+    2、import语法的文件引入（重点掌握）
+        import c from './c.js';  //es6的模块引入语法，等价于commonjs里面的require语法，c名称是自定义的
+
+
+注意：webpack能够打包很多类型的资源文件，js文件可以直接使用webpack来进行打包，js文件类型外的文件需要借助于对应的loader来进行打包
+css文件打包需要借助css-loader和style-loader，参考官网资料：https://www.webpackjs.com/loaders/css-loader/
+
+loader的常见打包处理
+
+        1、打包处理css文件，css-loader和style-loader的安装
+            1、安装css-loader和style-loader   
+            npm/cnpm install css-loader --save-dev；安装style-loader   npm/cnpm install style-loader --save-dev
+            npm/cnpm i css-loader style-loader --save-dev //一次安装2个
+            2、在需要引入css的js文件中引入    import css from 'css.css';
+            3、webpack.config.js全局配置中进行配置，规则匹配,module与entry和output属于同级别
+            module.exports = {
+                module: {
+                rules: [
+                    {
+                    test: /\.css$/,  //正则匹配，如果后缀为.css的文件，将此文件用style-loader和css-loader进行处理
+                    use: [ 'style-loader', 'css-loader' ] //执行顺序从右至左，注意书写顺序；如果css-loader放前面会报错
+                    }
+                ]
+                }
+            }
+        css-loader      将css后缀的文件解析为css
+        style-loader    将css添加一个style标签，插入到当前引入页面
+
+
+
+    2、打包处理sass/scss文件，sass-loader
+            1、安装npm/cnpm install sass-loader node-sass --save-dev
+            2、配置webpack.config.js
+                module: {
+                    rules: [{
+                        test: /\.scss$/, //如果使用sass，正则匹配需要修改为/\.scss|.sass$/
+                        use: [{
+                            loader: "style-loader" // 将 JS 字符串生成为 style 节点
+                        }, {
+                            loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
+                        }, {
+                            loader: "sass-loader" // 将 Sass 编译成 CSS
+                        }]
+                        //use: ['style-loader','css-loader','sass-loader'] //第二种写法
+                    }]
+                }
+
+                
+
+    3、打包处理less文件，less-loader
+            1、安装less-loader和less npm/cnpm install less-loader less --save-dev
+            2、配置webpack.config.js
+                module: {
+                    rules: [{
+                        test: /\.less$/, 
+                        use: ['style-loader','css-loader','less-loader'] 
+                    }]
+                }
+
+
+    4、打包处理图片文件，file-loader
+            1、安装file-loader   npm/cnpm install file-loader --save-dev
+            2、配置webpack.config.js
+                module: {
+                    rules: [{
+                        test: /\.jpg|.png|.gif|.svg$/, 
+                        //use: ['file-loader'] 
+                        use: {
+                                loader: 'file-loader',
+                                options: {
+                                    name: '[name].[ext]',
+                                    outputPath: 'img/'
+                                }
+                            }
+                    }]
+
+    备注：rules: [{},{}]，数组可以嵌套多个对象，多个规则，如果有多个规则，使用多个对象单独定义即可
+    例如：
+    module：{
+        rules: [
+            {
+                test: /\.scss|.sass$/,  //定义.scss和.sass文件规则
+                use: [ 'style-loader', 'css-loader','sass-loader']
+            },
+            {
+                test: /\.less$/,  //定义.less文件规则
+                use: [ 'style-loader', 'css-loader','less-loader']
+            }
+        ]
+    }
+    
+        
+
+插件plugin的使用
+    1、HtmlWebpackPlugink插件，用来处理html文件
+           安装npm/cnpm install --save-dev html-webpack-plugin
+           在webpack.config.js引入var HtmlWebpackPlugin = require('html-webpack-plugin');
+           在plugins中进行配置，plugins与output属于同级
+           module.exports = {
+                entry: 'index.js',
+                output: {
+                    path: path.resolve(__dirname, './dist'),
+                    filename: 'index_bundle.js'
+                },
+                plugins: [  //如果有多个页面，需要再实例化一下
+                    new HtmlWebpackPlugin({ //此插件为一个函数，如果想获取函数内对象之，需要先用new实例化一下
+                        title: 'index首页', //定义页面的title值，定义玩之后，需要在template模板html页面的title标签进行引用，<title><%= htmlWebpackPlugin.options.title %></title>
+                        filename: 'html/index.html', //打包后的文件命名，打包完成的页面
+                        template: './index.html',  //模板页面，要进行打包的页面
+                        chunks: ['a','b'], //定义此页面包含哪些js,其中a,b对应entry中一对一对象中对js页面生成文件名的自定义属性
+                        chunksSortMode: ['c'], //定义此页面不包含哪些js
+                        minify: false   //定义压缩方式，默认为true，定义为false则不进行压缩
+                    }),
+                    new HtmlWebpackPlugin({
+                        title: '列表页', //定义页面title
+                        filename: 'html/list.html', //定义打包后文件的名称及目录,此目录是针对output的目录来创建的目录
+                        template: './list.html',   //定义模板文件，即要打包的文件
+                    }) 
+                ]
+            };
+
+</body>
+</html>
